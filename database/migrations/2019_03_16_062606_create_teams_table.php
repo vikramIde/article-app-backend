@@ -15,7 +15,7 @@ class CreateTeamsTable extends Migration
     {
         Schema::create('teams', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->unsignedInteger('owner_id')->index();
+            $table->unsignedInteger('user_id')->index();
             $table->string('name');
             $table->string('slug')->nullable()->unique();
             $table->text('photo_url')->nullable();
