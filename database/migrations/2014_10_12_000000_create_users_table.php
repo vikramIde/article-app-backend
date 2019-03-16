@@ -24,6 +24,7 @@ class CreateUsersTable extends Migration
             $table->text('photo_url')->nullable();
             $table->string('phone', 25)->nullable()->unique();
             $table->string('city', 25)->nullable();
+            $table->string('zip', 25)->nullable();
             $table->string('country', 25)->nullable();
             $table->timestamps();
         });
