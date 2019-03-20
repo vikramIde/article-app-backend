@@ -20,7 +20,7 @@ class CreateArticlesTable extends Migration
             $table->bigInteger('tag_id')->unsigned();
             $table->string('title');
             $table->text('excerpts');
-            $table->longText('content');
+            $table->longText('description');
             $table->integer('status');
             $table->timestamp('published_at');
             $table->timestamps();
