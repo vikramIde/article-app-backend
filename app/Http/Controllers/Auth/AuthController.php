@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Helpers\ResponseHandler;
+use App\Helpers\ValidationHelper;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
+use App\User;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
@@ -15,7 +19,7 @@ class AuthController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['login','register']]);
+        $this->middleware('auth:api', ['except' => ['login','register','un']]);
     }
 
     /**
@@ -25,7 +29,28 @@ class AuthController extends Controller
      */
     public function register(Request $request)
     {
+        $validation_rules = [
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'password' => ['required', 'string', 'min:6']
+        ];
 
+        $validation_inputs = $request->all();
+
+        $validator_result = ValidationHelper::validator($validation_inputs, $validation_rules);
+
+        if($validator_result['code'] !== 200)
+        {
+            return ResponseHandler::buildUnsuccessfulValidationResponse($validator_result);
+        }
+
+        return User::create([
+            'first_name' => $request['first_name'],
+            'last_name' => $request['last_name'],
+            'email' => $request['email'],
+            'password' => Hash::make($request['password']),
+        ]);
     }
 
     /**
@@ -33,15 +58,29 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function login()
+    public function login(Request $request)
     {
+        $validation_rules = [
+            'email' => ['required', 'string', 'email', 'max:255'],
+            'password' => ['required', 'string', 'min:6']
+        ];
+
+        $validation_inputs = $request->all();
+
+        $validator_result = ValidationHelper::validator($validation_inputs, $validation_rules);
+
+        if($validator_result['code'] !== 200)
+        {
+            return ResponseHandler::buildUnsuccessfulValidationResponse($validator_result);
+        }
+
         $credentials = request(['email', 'password']);
 
         if (! $token = auth()->attempt($credentials)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return ResponseHandler::buildUnsuccessfulResponse('login_failed', ['Unauthorized'],'Invalid Username/password', 401);
         }
 
-        return $this->respondWithToken($token);
+        return ResponseHandler::buildSuccessfulResponse([$this->respondWithToken($token)],'Login successfull');
     }
 
     /**
@@ -51,7 +90,7 @@ class AuthController extends Controller
      */
     public function me()
     {
-        return response()->json(auth()->user());
+        return ResponseHandler::buildSuccessfulResponse([response()->json(auth()->user())], 'You are authorised User');
     }
 
     /**
@@ -63,7 +102,7 @@ class AuthController extends Controller
     {
         auth()->logout();
 
-        return response()->json(['message' => 'Successfully logged out']);
+        return ResponseHandler::buildSuccessfulResponse([], 'Successfully logged out');
     }
 
     /**
@@ -74,6 +113,11 @@ class AuthController extends Controller
     public function refresh()
     {
         return $this->respondWithToken(auth()->refresh());
+    }
+
+    public function un()
+    {
+        return ResponseHandler::buildUnsuccessfulResponse('invalid_token',['Token expired or Invalid'],'Token is expired or invalid, please try again later',401);
     }
 
     /**
