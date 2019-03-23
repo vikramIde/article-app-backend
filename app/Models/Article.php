@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Article extends Model
 {
-    protected $fillable = ['slug','title','description', 'excerpts', 'status','published_at','tag_id'];
+    protected $fillable = ['slug','title','user_id','description', 'excerpts', 'status','published_at','tag_id'];
 
     public function user()
     {
@@ -21,6 +21,6 @@ class Article extends Model
 
     public function comments()
     {
-        return $this->hasMany(ArticlesComment::class);
+        return $this->hasMany(ArticleComment::class);
     }
 }

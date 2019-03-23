@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Article;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\ArticleComment;
 
 class ArticlesCommentController extends Controller
 {
@@ -25,7 +26,21 @@ class ArticlesCommentController extends Controller
      */
     public function store(Request $request)
     {
+        
         //
+        $validatedData = $request->validate([
+            'article_id' => 'required',
+            'content' => 'required',
+            'user_id' => 'required'
+        ]);
+        // var_dump($request->user()->id);die;
+        return $article = ArticleComment::create([
+            'user_id' => $request->user_id,
+            'article_id' => $request->article_id,
+            'content' => $request->content,
+            'commented_at'=> date("Y-m-d H:i:s"),
+            'excerpts' => $request->excerpts,
+        ]);
     }
 
     /**

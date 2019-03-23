@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Article;
-
+use App\Models\ArticlesFile;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 

@@ -19,7 +19,7 @@ Route::group(['middleware' => 'api'], function ($router) {
     });
     Route::group(['namespace' => 'Article'], function () {
         Route::apiResource('articles', 'ArticleController');
-        Route::post('articles/{article}/comments', 'ArticlesCommentController@store');
+        Route::post('articles/{article}/comment', 'ArticlesCommentController@store');
         Route::post('articles/{article}/files', 'ArticlesFilesController@store');
     });
 });

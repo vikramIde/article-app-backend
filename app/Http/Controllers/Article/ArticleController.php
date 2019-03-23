@@ -5,8 +5,9 @@ namespace App\Http\Controllers\Article;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Article;
+use App\Models\ArticlesFile;
 use App\Http\Resources\ArticleResource;
-
+use Image;
 class ArticleController extends Controller
 {
     /**
@@ -16,7 +17,7 @@ class ArticleController extends Controller
      */
     public function index()
     {
-        return ArticleResource::collection(Article::with('ratings')->paginate(25));
+        return ArticleResource::collection(Article::with('files')->paginate(25));
     }
 
     /**
@@ -27,12 +28,40 @@ class ArticleController extends Controller
      */
     public function store(Request $request)
     {
+        $validatedData = $request->validate([
+            'title' => 'required|max:200',
+            'description' => 'required|max:20000',
+            'excerpts' => 'required|max:400',
+        ]);
+        // var_dump($request->user()->id);die;
+
         $article = Article::create([
+            'slug' => str_slug($request->title, '-'),
             'user_id' => $request->user()->id,
+            'tag_id' => 1,
+            'status' => 0,
             'title' => $request->title,
             'description' => $request->description,
+            'published_at'=> date("Y-m-d H:i:s"),
             'excerpts' => $request->excerpts,
         ]);
+        
+        //Upload a file
+        if($request->hasFile('blog_file'))
+        {
+            $image = $request->file('blog_file');
+            $fileName = time().'.'.$image->getClientOriginalName();
+            $location = public_path('images/'.$fileName);
+            Image::make($image)->resize(800,400)->save($location);
+
+            $file = ArticlesFile::create([
+                'user_id' => $request->user()->id,
+                'article_id' => $article->id,
+                'file_name' => $fileName,
+                'file_path' => $location,
+            ]);
+        }
+        
 
         return new ArticleResource($article);
     }
